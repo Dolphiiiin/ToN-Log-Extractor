@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Content Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        table {
+            width: 48%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        pre {
+            width: 48%;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ToN JSON Content Extractor</h1>
+    <ol>
+        <li>WindowsキーとRを押して、<code>%userprofile%/AppData/Roaming/ToNSaveManager/Database</code>と入力して、OK</li>
+        <li>抽出したい日付のファイルをメモ帳で開いて、中身をコピーして、以下のテキストエリアに貼り付けてください。</li>
+        <li>抽出ボタンをクリックして、抽出結果に最新のセーブデータを呼び出します。</li>
+    </ol>
+    <textarea id="jsonInput" rows="10" cols="50" placeholder="配列の文字列を入力してください"></textarea>
+    <button onclick="parseJson()">抽出</button>
+    <div class="container">
+        <table id="jsonTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Note</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <pre id="output" class="output"></pre>
+    </div>
+    <p>Madeb by Dolphiiiin. v1</p>
+
+    <script>
+        function parseJson() {
+            const input = document.getElementById('jsonInput').value;
+            try {
+                const jsonArray = JSON.parse(input);
+                if (Array.isArray(jsonArray) && jsonArray.length > 0) {
+                    const tbody = document.getElementById('jsonTable').getElementsByTagName('tbody')[0];
+                    tbody.innerHTML = '';
+                    jsonArray.forEach((item, index) => {
+                        const row = tbody.insertRow();
+                        const timestampCell = row.insertCell(0);
+                        const noteCell = row.insertCell(1);
+                        const selectCell = row.insertCell(2);
+
+                        timestampCell.textContent = item.Timestamp;
+                        noteCell.textContent = item.Note === "" ? "-" : item.Note;
+                        
+                        const button = document.createElement('button');
+                        button.textContent = '抽出';
+                        button.onclick = () => displayContent(item.Content);
+                        selectCell.appendChild(button);
+                    });
+                } else {
+                    document.getElementById('output').textContent = '配列が空です。';
+                }
+            } catch (e) {
+                document.getElementById('output').textContent = '無効なJSONです。';
+            }
+        }
+
+        function displayContent(content) {
+            document.getElementById('output').textContent = content;
+        }
+    </script>
+</body>
+</html>
