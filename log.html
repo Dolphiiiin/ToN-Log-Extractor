@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="ToN Log Extractor">
+    <meta property="og:description" content="ログファイルから特定のコードを抽出するツール">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/ToN-Log-Extractor/">
+
+    <title>Log Extractor</title>
+    <style>
+        :root {
+            --primary-color: #ff0000;
+            --primary-hover-color: #b30000;
+            --secondary-color: #28a745;
+            --secondary-hover-color: #218838;
+            --border-color: #ccc;
+            --background-color: #f8f9fa;
+            --text-color: white;
+        }
+
+        body {
+            background-color: #1f1f1f;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: var(--text-color);
+        }
+        h1 {
+            color: var(--text-color);
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button-blue {
+            background-color: var(--primary-color);
+        }
+        .button-blue:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        .button-green {
+            background-color: var(--secondary-color);
+        }
+        .button-green:hover {
+            background-color: var(--secondary-hover-color);
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid var(--border-color);
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .output-container {
+            width: 100%;
+            display: block;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 10px;
+        }
+        .output {
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 10px;
+        }
+
+        .message-box {
+            border: 1px solid var(--border-color);
+            background-color: #f9f9f9;
+            padding: 5px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .message-box ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 5px;
+        }
+        .message-box li {
+            font-size: 14px;
+            color: black;;
+        }
+        .message-box code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ToN Log Extractor</h1>
+    <ol>
+        <li>ログファイルの内容を以下のテキストエリアに貼り付けてください。</li>
+        <li>抽出ボタンをクリックして、抽出結果を表示します。</li>
+    </ol>
+    <div class="message-box">
+        <ul>
+            <li>ログファイルは、<code>%userprofile%\AppData\LocalLow\VRChat\VRChat</code>に保存されています。<br>(WindowsキーとRを押して、<code>%userprofile%/AppData/Roaming/ToNSaveManager/Database</code>と入力して、OKで開くことができます)</li>
+            <li>ログの出力には、VRChatの設定で<code>Debug</code>から、<code>Logging</code>を有効にしている必要があります。</li>
+        </ul>
+    </div>
+    <textarea id="logInput" rows="10" cols="50" placeholder="ログファイルの内容または、ここにドラックアンドドロップ"></textarea>
+    <button onclick="openLog()" class="button-green">参照</button>
+    <button onclick="extractCodes()" class="button-blue">抽出</button>
+    <div class="container">
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Location</th>
+                    <th>RoundType</th>
+                    <th>Detections</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="output-container">
+            <button onclick="copyCode()">クリップボードにコピー</button>
+            <textarea id="output" class="output" readonly></textarea>
+        </div>
+        
+    </div>
+    <p>Made by Dolphiiiin. v1</p>
+
+    <script>
+        function extractCodes() {
+            const input = document.getElementById('logInput').value;
+            const logLines = input.split('\n');
+            const logTableBody = document.getElementById('logTable').getElementsByTagName('tbody')[0];
+            logTableBody.innerHTML = '';
+    
+            let currentLocation = '';
+            let currentRoundType = '';
+            let currentDetections = [];
+            let currentTimestamp = '';
+            let currentCode = '';
+
+            let isRoundStarted = false;
+
+            let saveCodesArray = [];
+    
+            logLines.forEach(line => {
+                const locationMatch = line.match(/This round is taking place at (.*) and the round type is (.*)/);
+                const detectionMatch = line.match(/Detection : Initial Target : (.*)/);
+                const endMatch = line.match(/Log        -  \[START\](.*)\[END\]/s);
+                const respawnMatch = line.match(/Player respawned, opted out!/);
+
+            
+    
+                if (detectionMatch && isRoundStarted) {
+                    const detectionName = detectionMatch[1].trim();
+                    if (!currentDetections.includes(detectionName)) {
+                        currentDetections.push(detectionName);
+                    }
+
+                    return;
+                }
+
+                if (locationMatch) {
+                    currentLocation = locationMatch[1];
+                    const roundMatch = locationMatch[2];
+                    currentRoundType = roundMatch;
+
+                    isRoundStarted = true;
+                    currentDetections = [];
+
+                    return;
+                } 
+                
+                if (endMatch) {
+
+                    if(currentDetections.length == 0)
+                    {
+                        currentDetections = ['??'];
+                    }
+
+                    currentTimestamp = new Date(line.split(' ')[0] + ' ' + line.split(' ')[1]);
+                    currentTimestamp = currentTimestamp.getFullYear() + '/' + (currentTimestamp.getMonth() + 1) + '/' + currentTimestamp.getDate() + ' ' + currentTimestamp.getHours() + ':' + currentTimestamp.getMinutes() + ':' + currentTimestamp.getSeconds();
+                    currentCode = endMatch[1];
+                    saveCodesArray.push({
+                        timestamp: currentTimestamp,
+                        code: currentCode
+                    });
+    
+                    const row = logTableBody.insertRow(0);
+
+                    row.insertCell(0).textContent = currentTimestamp;
+                    row.insertCell(1).textContent = currentLocation;
+                    row.insertCell(2).textContent = currentRoundType;
+                    row.insertCell(3).textContent = currentDetections.join(', ');
+    
+                    const buttonCell = row.insertCell(4);
+                    const button = document.createElement('button');
+                    button.classList.add('button-blue');
+                    button.textContent = '表示';
+                    button.onclick = () => displayContent(currentCode);
+                    button.dataset.code = currentCode;
+                    button.onclick = function() {
+                        const copyButton = document.querySelector('.output-container button');
+                        copyButton.classList.add('button-blue');
+                        displayContent(this.dataset.code);
+                    };
+                    buttonCell.appendChild(button);
+    
+                    currentDetections = [];
+                    isRoundStarted = false;
+
+                    return;
+                }
+            });
+    
+            document.getElementById('output').textContent = '抽出が完了しました。';
+        }
+    
+        function displayContent(content) {
+            document.getElementById('output').textContent = content;
+        }
+
+        function openLog() {
+            const input = document.getElementById('logInput');
+            input.value = '';
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.txt';
+            fileInput.onchange = function() {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function() {
+                    input.value = reader.result;
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        }
+
+        //textareaにドラックアンドドロップで開く
+        const logInput = document.getElementById('logInput');
+        logInput.addEventListener('dragover', function(event) {
+            event.preventDefault();
+
+            // ドロップ時のエフェクトを変更
+            event.dataTransfer.dropEffect = 'copy';
+
+            // cssの変更
+            logInput.style.backgroundColor = '#f0f0f0';
+
+        });
+        logInput.addEventListener('drop', function(event) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                logInput.value = reader.result;
+            };
+            reader.readAsText(file);
+        });
+
+
+
+        function copyCode() {
+            const output = document.getElementById('output');
+            if(!output.value && !output.value == '抽出が完了しました。')
+            {
+                console.log('No content to copy');
+                return;
+            }
+
+            output.select();
+            document.execCommand('copy');
+            console.log('Copied to clipboard');
+            alart('クリップボードにコピーしました。');
+        }
+    </script>
+</body>
+</html>
