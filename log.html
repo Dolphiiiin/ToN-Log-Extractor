@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="ToN Log Extractor">
-    <meta property="og:description" content="ログファイルから特定のコードを抽出するツール">
+    <meta property="og:description" content="VRChatのログファイルから、ToNのセーブデータを抽出するツール>
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://example.com/ToN-Log-Extractor/">
+    <meta property="og:url" content="https://dolphiiiin.github.io/ToN-Log-Extractor/log">
 
     <title>Log Extractor</title>
     <style>
@@ -110,6 +110,10 @@
             font-size: 14px;
             color: black;;
         }
+        .message-box p {
+            font-size: 12px;
+            color: black;
+        }
         .message-box code {
             background-color: #e9ecef;
             padding: 2px 4px;
@@ -128,6 +132,7 @@
             <li>ログファイルは、<code>%userprofile%\AppData\LocalLow\VRChat\VRChat</code>に保存されています。<br>(WindowsキーとRを押して、<code>%userprofile%/AppData/Roaming/ToNSaveManager/Database</code>と入力して、OKで開くことができます)</li>
             <li>ログの出力には、VRChatの設定で<code>Debug</code>から、<code>Logging</code>を有効にしている必要があります。</li>
         </ul>
+        <p>このツールは、ローカルで抽出の処理を行うため、フォームに入力されたデータ及び抽出結果は、外部に送信されることはありません。<br>仕様の変更により、予告なく動作しなくなる可能性があります。<br><code>Made by Dolphiiiin. v1 2024/11/26</code></p>
     </div>
     <textarea id="logInput" rows="10" cols="50" placeholder="ログファイルの内容または、ここにドラックアンドドロップ"></textarea>
     <button onclick="openLog()" class="button-green">参照</button>
@@ -152,8 +157,6 @@
         </div>
         
     </div>
-    <p>このツールは、ローカルで抽出の処理を行うため、フォームに入力されたデータ及び抽出結果は、外部に送信されることはありません。<br>仕様の変更により、予告なく動作しなくなる可能性があります。</p>
-    <p>Made by Dolphiiiin. v1 2024/11/26</p>
 
     <script>
         function extractCodes() {
