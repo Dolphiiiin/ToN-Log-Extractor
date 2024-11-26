@@ -29,6 +29,9 @@
         h1 {
             color: var(--text-color);
         }
+        p {
+            margin: 8px 0;
+        }
         textarea {
             width: 100%;
             padding: 10px;
@@ -45,10 +48,10 @@
             cursor: pointer;
         }
 
-        .button-blue {
+        .button-red {
             background-color: var(--primary-color);
         }
-        .button-blue:hover {
+        .button-red:hover {
             background-color: var(--primary-hover-color);
         }
 
@@ -61,6 +64,7 @@
 
         .container {
             display: flex;
+            height: 500px;
             justify-content: space-between;
         }
         table {
@@ -84,13 +88,11 @@
         }
         .output {
             width: 100%;
-            height: 100%;
+            height: 500px;
             background-color: var(--background-color);
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
             margin-top: 10px;
         }
 
@@ -119,6 +121,13 @@
             padding: 2px 4px;
             border-radius: 4px;
         }
+
+        .info {
+            color: black;
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -136,8 +145,8 @@
     </div>
     <textarea id="logInput" rows="10" cols="50" placeholder="ログファイルの内容をここにペースト。または、ここにドラックアンドドロップ"></textarea>
     <button onclick="openLog()" class="button-green">参照</button>
-    <button onclick="extractCodes()" class="button-blue">抽出</button>
-    <div class="container">
+    <button onclick="extractCodes()" class="button-red">抽出</button>
+    <div class="container" style="display: none;">
         <table id="logTable">
             <thead>
                 <tr>
@@ -152,7 +161,8 @@
             </tbody>
         </table>
         <div class="output-container">
-            <button onclick="copyCode()">クリップボードにコピー</button>
+            <button onclick="copyCode()" class="button-red">クリップボードにコピー</button>
+            <p class="info-container" style="display: none;"><code id="info1" class="info"></code><br><code id="info2" class="info"></code></p>
             <textarea id="output" class="output" readonly></textarea>
         </div>
         
@@ -162,7 +172,8 @@
         function extractCodes() {
             const input = document.getElementById('logInput').value;
             const logLines = input.split('\n');
-            const logTableBody = document.getElementById('logTable').getElementsByTagName('tbody')[0];
+            const logTable = document.getElementById('logTable');
+            const logTableBody = logTable.getElementsByTagName('tbody')[0];
             logTableBody.innerHTML = '';
     
             let currentLocation = '';
@@ -225,16 +236,27 @@
                     row.insertCell(2).textContent = currentRoundType;
                     row.insertCell(3).textContent = currentDetections.join(', ');
     
+                    document.querySelector('.container').style.display = 'flex';
+
                     const buttonCell = row.insertCell(4);
                     const button = document.createElement('button');
-                    button.classList.add('button-blue');
+                    button.classList.add('button-red');
                     button.textContent = '表示';
-                    button.onclick = () => displayContent(currentCode);
+                    button.dataset.timestamp = currentTimestamp;
+                    button.dataset.location = currentLocation;
+                    button.dataset.roundType = currentRoundType;
+                    button.dataset.detections = currentDetections.join(', ');
                     button.dataset.code = currentCode;
                     button.onclick = function() {
+                        const infoContainer = document.querySelector('.info-container');
+                        infoContainer.style.display = 'block';
+
                         const copyButton = document.querySelector('.output-container button');
-                        copyButton.classList.add('button-blue');
+                        copyButton.classList.add('button-red');
                         displayContent(this.dataset.code);
+
+                        document.getElementById('info1').textContent = this.dataset.timestamp + ', Location: ' + this.dataset.location;
+                        document.getElementById('info2').textContent = 'RoundType: ' + this.dataset.roundType + ', Detections: ' + this.dataset.detections;
                     };
                     buttonCell.appendChild(button);
     
