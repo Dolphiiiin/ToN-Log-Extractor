@@ -189,7 +189,7 @@
             logLines.forEach(line => {
                 const locationMatch = line.match(/This round is taking place at (.*) and the round type is (.*)/);
                 const detectionMatch = line.match(/Detection : Initial Target : (.*)/);
-                const endMatch = line.match(/Log        -  \[START\](.*)\[END\]/s);
+                const endMatch = line.match(/Debug        -  \[START\](.*)\[END\]/s);
                 const respawnMatch = line.match(/Player respawned, opted out!/);
 
             
